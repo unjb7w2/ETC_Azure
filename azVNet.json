@@ -1,0 +1,76 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": { 
+      "VNetName": {
+          "type":"string",
+          "maxLength": 10,
+          "defaultValue": "etcVNET"
+      }
+  },
+  "variables": { 
+      "loc": "[resourceGroup().location]",
+      "NSG": "etcNSG"
+  },
+  "resources": [
+            {
+                "type": "Microsoft.Network/virtualNetworks",
+                "apiVersion": "2017-10-01",
+                "location": "[variables('loc')]",
+                "name": "[parameters('VNetName')]",
+                "dependsOn": [
+                    "[variables('NSG')]"
+                ],
+                "properties": {
+                    "addressSpace": {
+                        "addressPrefixes": [
+                            "10.60.0.0/16"
+                        ]
+                    },
+                    "subnets": [
+                        {
+                            "name": "FrontEnd",
+                            "properties": {
+                                "addressPrefix": "10.60.0.0/24",
+                                "networkSecurityGroup": {
+                                    "id": "[resourceId('Microsoft.Network/NetworkSecurityGroup', variables('NSG'))]"
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+               {
+                      "type": "Microsoft.Network/networkSecurityGroups",
+                      "apiVersion": "2017-10-01",     
+                      "name": "ArtofShell-WebServers",
+                      "location": "[variables('loc')]"
+                      "properties": {
+                          "securityRules": [
+                              {
+                                  "name": "InboundSSL",
+                                  "properties": {
+                                      "access": "Allow",
+                                      "description": "Rule Description goes here.",
+                                      "direction": "Inbound",
+                                      "priority": 500,
+                                      "protocol": "Tcp/Udp/*",
+                                      "sourceAddressPrefix": "*",
+                                      "destinationAddressPrefix": "10.5.0.0/24",
+                                      "destinationPortRange": "443",
+                                      "sourcePortRange": "*"
+                                  }
+                              }
+                          ]
+                      }
+                  }
+   ],
+  "outputs": {
+      "VNetName": {
+        "value": [parameters(('VNetName')]",
+        "type": "string"
+      },
+      "Location": {
+          "[variables('loc')]"
+   }
+}
